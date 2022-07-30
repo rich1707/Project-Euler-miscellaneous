@@ -1,0 +1,288 @@
+---
+title: "Miscellaneous Problems from Project Euler"
+author: "Richard Ryan"
+date: '2022-04-07'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, paged.print = FALSE)
+```
+
+```{r}
+library(numbers)
+library(gmp)
+library(Zseq)
+library(gtools)
+library(lubridate)
+```
+
+Problem 12
+
+```{r}
+triangle_number <- NA_integer_
+number_of_divisors <- 1
+index_number <- 1
+while(number_of_divisors <= 500){
+   triangle_number <- sum(1: index_number)
+   number_of_divisors <- length(divisors(triangle_number))
+   index_number <- index_number + 1
+}
+triangle_number
+```
+
+Problem 14
+
+```{r}
+lapply(1:1e6, function(.x) length(collatz(.x))) |>
+   unlist() |>
+   which.max()
+```
+
+Problem 16
+
+```{r}
+as.bigz(2**1000) |>
+   as.character() |>
+   strsplit(split = "") |>
+   unlist() |>
+   as.numeric() |>
+   sum()
+```
+
+Problem 17
+
+```{r}
+twenty_or_less <- c("one", "two", "three", "four", "five", "six", "seven", "eight", "nine", 
+                    "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", 
+                    "seventeen", "eighteen", "nineteen", "twenty")
+
+ten_and_multiples <- c("ten", "twenty", "thirty", "forty", "fifty", "sixty", 
+                       "seventy", "eighty", "ninety")
+```
+
+```{r}
+number_words_20 <- 
+   paste0(twenty_or_less, collapse = "") |>
+   nchar()
+
+number_words_99 <- character()
+
+for(i in 21:99) {
+   number_word <- ten_and_multiples[floor(i / 10)]
+   number_word <- paste0(number_word, twenty_or_less[i - (10 * floor(i / 10))])
+   number_words_99[i - 20] <- number_word
+}
+
+number_words_99 <- 
+   paste0(number_words_99, collapse = "") |>
+   nchar()
+
+number_words_999 <- character()
+
+for(i in 100:999) {
+   number_word <- paste0(twenty_or_less[floor((i / 100))], "hundred")
+   remainder <- i - (100 * floor(i / 100))
+   if(remainder > 0) {
+      number_word <- paste0(number_word, "and")
+      if(remainder < 21) {
+         number_word <- paste0(number_word, twenty_or_less[remainder])
+      } else {
+         number_word <- paste0(number_word, ten_and_multiples[floor(remainder / 10)])
+         number_word <- paste0(number_word, twenty_or_less[remainder - (10 * floor(remainder / 10))])
+      }
+   }
+   number_words_999[i - 99] <- number_word 
+}
+
+number_words_999 <- 
+   paste0(number_words_999, collapse = "") |>
+   nchar()
+
+number_words_1000 <- 
+   paste0("one", "thousand", collapse = "") |>
+   nchar()
+
+sum(number_words_20, number_words_99, number_words_999, number_words_1000)
+```
+
+Problem 19
+
+```{r}
+all_dates <- seq(as_date("1901-01-01"), as_date("2000-12-31"), by = 1)
+
+first_of_month <- 
+   floor_date(all_dates, "month") |>
+   unique()
+
+first_weekday <- wday(first_of_month, label = TRUE)
+
+first_weekday[first_weekday == "Sun"] |>
+   length()
+```
+
+Problem 20
+
+```{r}
+factorialZ(100) |>
+   as.character() |>
+   strsplit(split = "") |>
+   unlist() |>
+   as.numeric() |>
+   sum() 
+```
+
+
+Problem 21
+
+```{r}
+amicable_numbers <- numeric()
+for(i in 2: 9999) {
+   first_number <- divisors(i) |> 
+      sum() - i
+   second_number <- divisors(first_number) |> 
+      sum() - first_number
+   if(first_number != i & second_number == i) {
+      amicable_numbers <- c(amicable_numbers, i)
+   }
+}
+
+amicable_numbers |>
+   sum()
+```
+
+Problem 22
+
+```{r}
+all_names <- readLines("p022_names.txt") |>
+   strsplit(",") |>
+   unlist()
+
+all_names <- gsub("[[:punct:]]", "", all_names) |>
+   tolower() |>
+   sort()
+
+name_scores <- rep(0, length(all_names))
+
+for(i in seq_along(all_names)) {
+   split_name_value <- strsplit(all_names[i], "") |>
+      unlist() |>
+      match(letters) |>
+      sum()
+   name_scores[i] <- split_name_value * i
+}
+
+sum(name_scores)
+```
+
+Problem 24
+
+```{r}
+numerals <- as.character(0:9) 
+
+perms <- permutations(n = 10, r = 10, v = numerals)
+
+perms[1e6, ] |>
+   paste0(collapse = "") |>
+   as.numeric()
+```
+
+Problem 25
+
+```{r}
+first_number <- 0
+second_number <- 1
+index <- 1
+num_char <- 0
+
+while(num_char < 1000) {
+   fib_number <- as.bigz(first_number + second_number)
+   num_char <- fib_number |>
+      as.character() |>
+      nchar()
+   first_number <- second_number
+   second_number <- fib_number
+   
+   index <- index + 1
+}
+
+index
+```
+
+Problem 26
+
+```{r}
+calc_decimals <- function(x) {
+   div_vec <- numeric()
+   rem_vec <- numeric()
+   base_num <- 10
+   index <- 1
+   if(x == 1) return(0)
+   repeat {
+      div_vec[index] <- floor(base_num / x)
+      base_num <- 10 * (base_num %% x)
+      if(base_num == 0 | base_num %in% rem_vec) 
+         break
+      rem_vec[index] <- base_num
+      index <- index + 1
+   }
+   return(div_vec)
+}
+
+lapply(1:999, function(.x) length(calc_decimals(.x))) |>
+   unlist() |>
+   which.max()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
