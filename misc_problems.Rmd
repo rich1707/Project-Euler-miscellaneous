@@ -14,7 +14,7 @@ library(numbers)
 library(gmp)
 library(Zseq)
 library(gtools)
-library(lubridate)
+library(clock)
 ```
 
 Problem 12
@@ -109,13 +109,14 @@ sum(number_words_20, number_words_99, number_words_999, number_words_1000)
 Problem 19
 
 ```{r}
-all_dates <- seq(as_date("1901-01-01"), as_date("2000-12-31"), by = 1)
+all_dates <- seq(date_parse("1901-01-01"), date_parse("2000-12-31"), by = 1)
 
 first_of_month <- 
-   floor_date(all_dates, "month") |>
+   date_group(all_dates, "month") |>
    unique()
 
-first_weekday <- wday(first_of_month, label = TRUE)
+first_weekday <- as_weekday(first_of_month) |>
+   as.character()
 
 first_weekday[first_weekday == "Sun"] |>
    length()

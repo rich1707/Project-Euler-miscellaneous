@@ -5,7 +5,7 @@ date: '6 April 2022'
 output: 
    html_document:
       css: style.css
-      theme: flatly
+      theme: readable
       highlight: pygments
 ---
 
@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-<body style="background-color:#F3F4F2;">
+<body style="background-color:#f3f4ee;">
 
 We have completed the first ten problem from Project Euler [here](https://rich1707.github.io/Project-Euler-1/). We now take a look at some additional problems. None of these problems involve any advanced mathematics but they do provide invaluable experience in using `R` to solve problems outside the field of data science. 
 
@@ -28,7 +28,7 @@ library(numbers)
 library(gmp)
 library(Zseq)
 library(gtools)
-library(lubridate)
+library(clock)
 
 ```
 
@@ -202,17 +202,18 @@ sum(number_words_20, number_words_99, number_words_999, number_words_1000)
 
 **The solution**
 
-We start with a vector of all dates from the first date above to the second. Next we use `floor_date()` and `unique()` to return the first day of every month. The `wday()` function tells us what weekday each date fell on. All that remains is to count the Sundays. 
+We start with a vector of all dates from the first date above to the second. Next we use `date_group()` and `unique()` to return the first day of every month. The `as_weekday()` function tells us what weekday each date fell on. All that remains is to count the Sundays. 
 
 ```{r}
 
-all_dates <- seq(as_date("1901-01-01"), as_date("2000-12-31"), by = 1)
+all_dates <- seq(date_parse("1901-01-01"), date_parse("2000-12-31"), by = 1)
 
 first_of_month <- 
-   floor_date(all_dates, "month") |>
+   date_group(all_dates, "month") |>
    unique()
 
-first_weekday <- wday(first_of_month, label = TRUE)
+first_weekday <- as_weekday(first_of_month) |>
+   as.character()
 
 first_weekday[first_weekday == "Sun"] |>
    length()
@@ -299,7 +300,7 @@ amicable_numbers |>
 
 **The solution:**
 
-We first need to read in the text file, strip away the punctuation and sort into alphabetical order. Using a `for()` loop over the `all_names` vector, we split each name into its component characters and match each of these characters in the inbuilt `letters` vector. This gives us a vector of the index position in the alphabet of each of the letters in the name, which we `sum()` and then multiply by the index position in the `all_names` vector. We then have our score for the name in question, which we store in the `split_name_value` vector. Once the `for()` loop has completed, we simply `sum()` up hte values to find our answer.
+We first need to read in the text file, strip away the punctuation and sort into alphabetical order. Using a `for()` loop over the `all_names` vector, we split each name into its component characters and match each of these characters in the inbuilt `letters` vector. This gives us a vector of the index position in the alphabet of each of the letters in the name, which we `sum()` and then multiply by the index position in the `all_names` vector. We then have our score for the name in question, which we store in the `split_name_value` vector. Once the `for()` loop has completed, we simply `sum()` up the values to find our answer.
 
 ```{r}
 
